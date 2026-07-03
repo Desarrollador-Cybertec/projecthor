@@ -1,58 +1,88 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ProjectFlow
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Monolito Laravel para gestionar el ciclo de vida completo de proyectos de software con un flujo por etapas comprensible tanto para el equipo de desarrollo como para clientes no técnicos.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 13 · PHP 8.4
+- PostgreSQL (SQLite en desarrollo local)
+- Blade + Livewire 3 + Tailwind CSS 4
+- Laravel Queues + Scheduler
+- Storage compatible con S3
+- Pest · Laravel Pint
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Arquitectura
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Arquitectura modular por dominios en `app/Domains`:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+app/Domains/
+    Users/          Roles (admin/desarrollador), notificaciones internas
+    Projects/       Proyectos, exportación PDF/Excel
+    Stages/         Etapas: Planeación → Diseño → Desarrollo → Pruebas → Implementación → Finalizado
+    Activities/     Actividades con estados, prioridad, orden y responsables
+    Evidence/       Evidencias por actividad (archivos, enlaces, Figma, producción)
+    Screenshots/    Capturas de pantalla agrupables por etapa/actividad/versión
+    Comments/       Observaciones polimórficas con adjuntos, respuestas y estados
+    Files/          Biblioteca documental con versionado
+    Timeline/       Línea de tiempo automática por eventos de dominio
+    Dashboard/      Indicadores generales
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Cada dominio contiene sus `Models`, `Enums`, `Services`, `DTOs`, `Policies`, `Events` y `Listeners`. Los componentes Livewire viven en `app/Livewire` y la auditoría transversal en `app/Support/Auditing`.
 
-## Contributing
+## Puesta en marcha
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+cp .env.example .env          # configura PostgreSQL, o usa DB_CONNECTION=sqlite
+php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
+npm install && npm run build
+php artisan serve             # o Laravel Herd
+```
 
-## Code of Conduct
+Para colas y tareas programadas en desarrollo:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan queue:listen
+php artisan schedule:work
+```
 
-## Security Vulnerabilities
+### Credenciales sembradas
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Rol           | Correo                    | Contraseña |
+| ------------- | ------------------------- | ---------- |
+| Administrador | `admin@projectflow.test`  | `password` |
+| Desarrollador | `laura@projectflow.test`  | `password` |
 
-## License
+## Funcionalidad
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Dashboard** con indicadores (proyectos activos/finalizados, actividades pendientes/finalizadas, próximas entregas, última actividad) y tarjetas de proyecto.
+- **Proyectos** con cliente, logo, color, responsable, equipo, fechas, prioridad, estado y URLs (producción, pruebas, documentación, repositorio). Al crear un proyecto se generan sus 6 etapas por defecto.
+- **Etapas** con objetivo, fechas, estado y avance % (recalculado automáticamente desde sus actividades).
+- **Actividades** con prioridad, estado, responsable, orden manual y cambio rápido de estado.
+- **Evidencias** con carga múltiple drag & drop, miniaturas para imágenes y enlaces (Figma/producción).
+- **Capturas** con vista, módulo, resolución, plataforma y agrupación por etapa/actividad/versión.
+- **Archivos** por categoría (contratos, manuales, mockups, branding, actas, documentación técnica, recursos) con versionado, historial, vista previa y descarga autorizada.
+- **Observaciones** conversacionales sobre proyectos, etapas, actividades, evidencias y capturas, con adjuntos, respuestas y estados (abierta/en proceso/resuelta).
+- **Línea de tiempo** automática vía eventos de dominio.
+- **Notificaciones internas** (base de datos, encoladas) y aviso diario de entregas próximas (`projectflow:notify-upcoming-deadlines`, programado a las 08:00).
+- **Búsqueda global** (Ctrl+K) sobre proyectos, actividades y archivos visibles.
+- **Exportación** a PDF (reporte de proyecto con dompdf) y Excel real `.xlsx` (OpenSpout).
+- **Auditoría** de creaciones, cambios y eliminaciones en `audits`.
+- **Soft deletes**, políticas de autorización por rol, modo oscuro y diseño responsive.
+
+## Roles
+
+- **Administrador**: acceso total (usuarios, proyectos, etapas, archivos, etc.).
+- **Desarrollador**: solo ve y gestiona información de los proyectos donde es responsable o miembro; puede actualizar actividades, cambiar estados, subir evidencias/capturas y crear observaciones.
+
+## Tests
+
+```bash
+php artisan test
+```
+
+Suite de integración con Pest (autenticación, autorización, CRUD de todos los módulos, subidas de archivos, exportaciones, notificaciones, comando programado y auditoría).
