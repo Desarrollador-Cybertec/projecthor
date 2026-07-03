@@ -82,7 +82,7 @@
                                 </select>
                             @endcan
                             @can('delete', $comment)
-                                <button type="button" wire:click="deleteComment({{ $comment->id }})" wire:confirm="¿Eliminar esta observación?"
+                                <button type="button" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar esta observación?') }}, () => $wire.deleteComment({{ $comment->id }}))"
                                         class="font-medium text-rose-600 hover:underline dark:text-rose-400">Eliminar</button>
                             @endcan
                         </div>
@@ -98,7 +98,7 @@
                                                 <span class="text-xs font-medium">{{ $reply->author->name }}</span>
                                                 <span class="text-xs text-slate-400">{{ $reply->created_at->diffForHumans() }}</span>
                                                 @can('delete', $reply)
-                                                    <button type="button" wire:click="deleteComment({{ $reply->id }})" wire:confirm="¿Eliminar esta respuesta?"
+                                                    <button type="button" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar esta respuesta?') }}, () => $wire.deleteComment({{ $reply->id }}))"
                                                             class="text-xs font-medium text-rose-600 hover:underline dark:text-rose-400">Eliminar</button>
                                                 @endcan
                                             </div>

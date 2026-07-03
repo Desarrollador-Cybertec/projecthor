@@ -36,7 +36,7 @@
                             <x-ui.button variant="secondary" size="sm" wire:click="openEdit({{ $stage->id }})">Editar</x-ui.button>
                         @endcan
                         @can('delete', $stage)
-                            <x-ui.button variant="ghost" size="sm" wire:click="deleteStage({{ $stage->id }})" wire:confirm="¿Eliminar la etapa «{{ $stage->name }}»?">
+                            <x-ui.button variant="ghost" size="sm" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar la etapa «'.$stage->name.'»?') }}, () => $wire.deleteStage({{ $stage->id }}))">
                                 <span class="text-rose-600 dark:text-rose-400">Eliminar</span>
                             </x-ui.button>
                         @endcan

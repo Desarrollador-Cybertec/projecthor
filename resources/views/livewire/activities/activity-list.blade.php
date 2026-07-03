@@ -75,7 +75,7 @@
                             <x-ui.button variant="ghost" size="sm" wire:click="openEdit({{ $activity->id }})">Editar</x-ui.button>
                         @endcan
                         @can('delete', $activity)
-                            <x-ui.button variant="ghost" size="sm" wire:click="deleteActivity({{ $activity->id }})" wire:confirm="¿Eliminar la actividad «{{ $activity->name }}»?">
+                            <x-ui.button variant="ghost" size="sm" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar la actividad «'.$activity->name.'»?') }}, () => $wire.deleteActivity({{ $activity->id }}))">
                                 <span class="text-rose-600 dark:text-rose-400">Eliminar</span>
                             </x-ui.button>
                         @endcan
@@ -182,7 +182,7 @@
                                     <a href="{{ route('evidences.download', $evidence) }}" class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">Descargar</a>
                                 @endif
                                 @can('delete', $evidence)
-                                    <button type="button" wire:click="deleteEvidence({{ $evidence->id }})" wire:confirm="¿Eliminar la evidencia «{{ $evidence->name }}»?"
+                                    <button type="button" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar la evidencia «'.$evidence->name.'»?') }}, () => $wire.deleteEvidence({{ $evidence->id }}))"
                                             class="text-xs font-medium text-rose-600 hover:underline dark:text-rose-400">Eliminar</button>
                                 @endcan
                             </div>

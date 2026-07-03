@@ -63,7 +63,7 @@
                                         {{ $user->is_active ? 'Desactivar' : 'Activar' }}
                                     </x-ui.button>
                                     @can('delete', $user)
-                                        <x-ui.button variant="ghost" size="sm" wire:click="deleteUser({{ $user->id }})" wire:confirm="¿Eliminar a {{ $user->name }}?">
+                                        <x-ui.button variant="ghost" size="sm" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar a '.$user->name.'?') }}, () => $wire.deleteUser({{ $user->id }}))">
                                             <span class="text-rose-600 dark:text-rose-400">Eliminar</span>
                                         </x-ui.button>
                                     @endcan

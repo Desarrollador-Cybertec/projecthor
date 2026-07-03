@@ -13,7 +13,7 @@
                              class="{{ $thumb }} rounded-lg border border-slate-200 object-cover dark:border-slate-700">
                     </a>
                     @can('delete', $screenshot)
-                        <button type="button" wire:click="deleteScreenshot({{ $screenshot->id }})" wire:confirm="¿Eliminar esta captura?"
+                        <button type="button" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar esta captura?') }}, () => $wire.deleteScreenshot({{ $screenshot->id }}))"
                                 class="absolute -right-1.5 -top-1.5 hidden size-5 items-center justify-center rounded-full bg-rose-600 text-white shadow group-hover:flex"
                                 aria-label="Eliminar captura">
                             <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>

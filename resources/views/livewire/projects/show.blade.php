@@ -56,12 +56,12 @@
 
                 @can('finish', $project)
                     @unless ($project->isFinished())
-                        <x-ui.button wire:click="finish" wire:confirm="¿Marcar este proyecto como finalizado?">Finalizar</x-ui.button>
+                        <x-ui.button x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Marcar este proyecto como finalizado?') }}, () => $wire.finish(), false)">Finalizar</x-ui.button>
                     @endunless
                 @endcan
 
                 @can('delete', $project)
-                    <x-ui.button variant="danger" wire:click="delete" wire:confirm="¿Eliminar este proyecto? Esta acción puede revertirse desde la base de datos.">Eliminar</x-ui.button>
+                    <x-ui.button variant="danger" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar este proyecto? Esta acción puede revertirse desde la base de datos.') }}, () => $wire.delete())">Eliminar</x-ui.button>
                 @endcan
             </div>
         </div>

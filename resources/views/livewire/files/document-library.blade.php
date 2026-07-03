@@ -51,7 +51,7 @@
                         <x-ui.button variant="ghost" size="sm" wire:click="openNewVersion({{ $document->id }})">Nueva versión</x-ui.button>
                     @endcan
                     @can('delete', $document)
-                        <x-ui.button variant="ghost" size="sm" wire:click="deleteDocument({{ $document->id }})" wire:confirm="¿Eliminar «{{ $document->name }}» y todas sus versiones?">
+                        <x-ui.button variant="ghost" size="sm" x-on:click="$store.confirm.open({{ \Illuminate\Support\Js::from('¿Eliminar «'.$document->name.'» y todas sus versiones?') }}, () => $wire.deleteDocument({{ $document->id }}))">
                             <span class="text-rose-600 dark:text-rose-400">Eliminar</span>
                         </x-ui.button>
                     @endcan

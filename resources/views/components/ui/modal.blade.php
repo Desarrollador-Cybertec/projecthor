@@ -8,8 +8,8 @@
     x-data="{ show: false }"
     x-show="show"
     x-cloak
-    x-on:open-modal.window="if ($event.detail === '{{ $name }}') show = true"
-    x-on:close-modal.window="if (!$event.detail || $event.detail === '{{ $name }}') show = false"
+    x-on:open-modal.window="if ((Array.isArray($event.detail) ? $event.detail[0] : $event.detail) === '{{ $name }}') show = true"
+    x-on:close-modal.window="let modalName = Array.isArray($event.detail) ? $event.detail[0] : $event.detail; if (!modalName || modalName === '{{ $name }}') show = false"
     x-on:keydown.escape.window="show = false"
     class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
 >

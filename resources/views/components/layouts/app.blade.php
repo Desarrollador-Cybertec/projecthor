@@ -105,6 +105,8 @@
         </div>
     </div>
 
+    <x-ui.confirm-dialog />
+
     {{-- Toasts --}}
     <div x-data="{ toasts: [] }"
          x-on:toast.window="const t = { id: Date.now(), ...$event.detail }; toasts.push(t); setTimeout(() => toasts = toasts.filter(i => i.id !== t.id), 4000)"
