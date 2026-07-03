@@ -8,15 +8,21 @@ use App\Domains\Activities\DTOs\ActivityData;
 use App\Domains\Activities\Enums\ActivityStatus;
 use App\Domains\Activities\Models\Activity;
 use App\Domains\Activities\Services\ActivityService;
+use App\Domains\Evidence\DTOs\EvidenceData;
+use App\Domains\Evidence\Enums\EvidenceType;
+use App\Domains\Evidence\Models\Evidence;
+use App\Domains\Evidence\Services\EvidenceService;
 use App\Domains\Projects\Enums\Priority;
 use App\Domains\Projects\Models\Project;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class ActivityList extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     public Project $project;
@@ -42,6 +48,25 @@ class ActivityList extends Component
     public string $priority = 'medium';
 
     public string $status = 'pending';
+
+    // Evidencias del detalle de actividad — subida de archivos
+    /** @var array<int, mixed> */
+    public array $evidenceFiles = [];
+
+    public string $evidenceVersion = '1.0';
+
+    public string $evidenceDescription = '';
+
+    // Evidencias del detalle de actividad — enlace
+    public string $evidenceLinkName = '';
+
+    public string $evidenceLinkUrl = '';
+
+    public string $evidenceLinkType = 'link';
+
+    public string $evidenceLinkVersion = '1.0';
+
+    public string $evidenceLinkDescription = '';
 
     /**
      * @return array<string, list<mixed>>
@@ -102,7 +127,100 @@ class ActivityList extends Component
     public function openDetail(int $activityId): void
     {
         $this->detailActivityId = $this->project->activities()->findOrFail($activityId)->id;
+        $this->resetEvidenceForms();
         $this->dispatch('open-modal', 'activity-detail');
+    }
+
+    public function saveEvidenceFiles(EvidenceService $service): void
+    {
+        $activity = $this->project->activities()->findOrFail($this->detailActivityId);
+
+        $this->authorize('create', [Evidence::class, $this->project]);
+
+        $this->validate([
+            'evidenceFiles' => ['required', 'array', 'min:1', 'max:10'],
+            'evidenceFiles.*' => ['file', 'max:51200'],
+            'evidenceVersion' => ['required', 'string', 'max:20'],
+            'evidenceDescription' => ['nullable', 'string', 'max:2000'],
+        ], attributes: [
+            'evidenceFiles' => 'archivos',
+            'evidenceVersion' => 'versión',
+            'evidenceDescription' => 'descripción',
+        ]);
+
+        foreach ($this->evidenceFiles as $file) {
+            $service->storeFile($activity, $file, new EvidenceData(
+                name: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                version: $this->evidenceVersion,
+                description: $this->evidenceDescription !== '' ? $this->evidenceDescription : null,
+            ), auth()->user());
+        }
+
+        $this->reset(['evidenceFiles', 'evidenceDescription']);
+        $this->evidenceVersion = '1.0';
+        $this->dispatch('project-updated');
+        $this->dispatch('toast', message: 'Evidencias subidas correctamente.');
+    }
+
+    public function saveEvidenceLink(EvidenceService $service): void
+    {
+        $activity = $this->project->activities()->findOrFail($this->detailActivityId);
+
+        $this->authorize('create', [Evidence::class, $this->project]);
+
+        $this->validate([
+            'evidenceLinkName' => ['required', 'string', 'max:255'],
+            'evidenceLinkUrl' => ['required', 'url', 'max:2048'],
+            'evidenceLinkType' => ['required', Rule::in(['link', 'figma', 'production'])],
+            'evidenceLinkVersion' => ['required', 'string', 'max:20'],
+            'evidenceLinkDescription' => ['nullable', 'string', 'max:2000'],
+        ], attributes: [
+            'evidenceLinkName' => 'nombre',
+            'evidenceLinkUrl' => 'URL',
+            'evidenceLinkType' => 'tipo',
+            'evidenceLinkVersion' => 'versión',
+            'evidenceLinkDescription' => 'descripción',
+        ]);
+
+        $service->storeLink($activity, new EvidenceData(
+            name: $this->evidenceLinkName,
+            version: $this->evidenceLinkVersion,
+            description: $this->evidenceLinkDescription !== '' ? $this->evidenceLinkDescription : null,
+            type: EvidenceType::from($this->evidenceLinkType),
+            url: $this->evidenceLinkUrl,
+        ), auth()->user());
+
+        $this->resetEvidenceForms();
+        $this->dispatch('project-updated');
+        $this->dispatch('toast', message: 'Enlace registrado como evidencia.');
+    }
+
+    public function deleteEvidence(int $evidenceId, EvidenceService $service): void
+    {
+        $activity = $this->project->activities()->findOrFail($this->detailActivityId);
+        $evidence = $activity->evidences()->findOrFail($evidenceId);
+
+        $this->authorize('delete', $evidence);
+
+        $service->delete($evidence);
+
+        $this->dispatch('project-updated');
+        $this->dispatch('toast', message: 'Evidencia eliminada.');
+    }
+
+    private function resetEvidenceForms(): void
+    {
+        $this->reset([
+            'evidenceFiles',
+            'evidenceDescription',
+            'evidenceLinkName',
+            'evidenceLinkUrl',
+            'evidenceLinkDescription',
+        ]);
+        $this->evidenceVersion = '1.0';
+        $this->evidenceLinkType = 'link';
+        $this->evidenceLinkVersion = '1.0';
+        $this->resetValidation();
     }
 
     public function save(ActivityService $service): void
@@ -194,7 +312,7 @@ class ActivityList extends Component
             'statuses' => ActivityStatus::options(),
             'priorities' => Priority::options(),
             'detailActivity' => $this->detailActivityId
-                ? $this->project->activities()->with(['responsible', 'stage'])->find($this->detailActivityId)
+                ? $this->project->activities()->with(['responsible', 'stage', 'evidences.author'])->find($this->detailActivityId)
                 : null,
         ]);
     }

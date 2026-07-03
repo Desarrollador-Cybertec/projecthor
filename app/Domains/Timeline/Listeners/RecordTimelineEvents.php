@@ -124,7 +124,7 @@ class RecordTimelineEvents
         $this->recorder->record(
             $event->screenshot->project,
             TimelineEventType::ScreenshotAdded,
-            "Se agregó la captura «{$event->screenshot->view_name}».",
+            'Se agregó una captura a una observación.',
             $event->screenshot,
             $event->actor,
         );

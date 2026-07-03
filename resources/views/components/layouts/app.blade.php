@@ -6,13 +6,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name') }} — {{ config('app.name') }}</title>
     <script>
-        // Aplica el tema guardado antes del primer render para evitar parpadeo.
-        (function () {
+        // Aplica el tema guardado. Se ejecuta antes del primer render y también
+        // tras cada navegación wire:navigate, ya que Livewire remorfa el <html>
+        // (sin la clase "dark") al servidor renderizarlo sin conocer localStorage.
+        window.applyTheme = function () {
             const theme = localStorage.getItem('theme');
-            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            }
-        })();
+            const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDark);
+        };
+        window.applyTheme();
+        document.addEventListener('livewire:navigated', window.applyTheme);
         window.toggleTheme = function () {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');

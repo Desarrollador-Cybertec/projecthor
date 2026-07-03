@@ -77,6 +77,12 @@ class Comment extends Model
         return $this->hasMany(CommentAttachment::class);
     }
 
+    /** @return HasMany<Screenshot, $this> */
+    public function screenshots(): HasMany
+    {
+        return $this->hasMany(Screenshot::class);
+    }
+
     public function commentable(): MorphTo
     {
         return $this->morphTo();
@@ -93,8 +99,7 @@ class Comment extends Model
             $commentable instanceof Project => $commentable,
             $commentable instanceof Stage,
             $commentable instanceof Activity,
-            $commentable instanceof Evidence,
-            $commentable instanceof Screenshot => $commentable->project,
+            $commentable instanceof Evidence => $commentable->project,
             default => null,
         };
     }

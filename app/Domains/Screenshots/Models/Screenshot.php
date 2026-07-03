@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Screenshots\Models;
 
-use App\Domains\Activities\Models\Activity;
 use App\Domains\Comments\Models\Comment;
 use App\Domains\Projects\Models\Project;
-use App\Domains\Stages\Models\Stage;
 use App\Domains\Users\Models\User;
 use App\Support\Auditing\Auditable;
 use Database\Factories\ScreenshotFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -29,8 +26,7 @@ class Screenshot extends Model
 
     protected $fillable = [
         'project_id',
-        'stage_id',
-        'activity_id',
+        'comment_id',
         'author_id',
         'view_name',
         'module',
@@ -62,28 +58,16 @@ class Screenshot extends Model
         return $this->belongsTo(Project::class);
     }
 
-    /** @return BelongsTo<Stage, $this> */
-    public function stage(): BelongsTo
+    /** @return BelongsTo<Comment, $this> */
+    public function comment(): BelongsTo
     {
-        return $this->belongsTo(Stage::class);
-    }
-
-    /** @return BelongsTo<Activity, $this> */
-    public function activity(): BelongsTo
-    {
-        return $this->belongsTo(Activity::class);
+        return $this->belongsTo(Comment::class);
     }
 
     /** @return BelongsTo<User, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
-    }
-
-    /** @return MorphMany<Comment, $this> */
-    public function comments(): MorphMany
-    {
-        return $this->morphMany(Comment::class, 'commentable');
     }
 
     public function imageUrl(): string

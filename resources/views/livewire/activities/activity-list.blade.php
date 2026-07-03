@@ -151,6 +151,88 @@
                     @endif
                 </dl>
 
+                {{-- Evidencias de la actividad --}}
+                <div class="border-t border-slate-200 pt-4 dark:border-slate-800" x-data="{ panel: 'none' }">
+                    <div class="mb-3 flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-semibold">Evidencias ({{ $detailActivity->evidences->count() }})</h3>
+                        @can('create', [App\Domains\Evidence\Models\Evidence::class, $project])
+                            <div class="flex gap-2">
+                                <x-ui.button variant="secondary" size="sm" type="button" @click="panel = panel === 'link' ? 'none' : 'link'">Registrar enlace</x-ui.button>
+                                <x-ui.button size="sm" type="button" @click="panel = panel === 'file' ? 'none' : 'file'">Subir archivo</x-ui.button>
+                            </div>
+                        @endcan
+                    </div>
+
+                    <div class="space-y-2">
+                        @forelse ($detailActivity->evidences as $evidence)
+                            <div wire:key="activity-evidence-{{ $evidence->id }}" class="flex items-center gap-3 rounded-xl border border-slate-200 p-2.5 dark:border-slate-800">
+                                @if ($evidence->thumbnailUrl())
+                                    <img src="{{ $evidence->thumbnailUrl() }}" alt="" class="size-10 shrink-0 rounded-lg object-cover">
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="truncate text-sm font-medium">{{ $evidence->name }}</span>
+                                        <x-ui.badge :classes="$evidence->type->badgeClasses()">{{ $evidence->type->label() }}</x-ui.badge>
+                                    </div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">v{{ $evidence->version }} · {{ $evidence->author->name }}</p>
+                                </div>
+                                @if ($evidence->type->isLinkBased() && $evidence->url)
+                                    <a href="{{ $evidence->url }}" target="_blank" rel="noopener noreferrer" class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">Abrir</a>
+                                @elseif ($evidence->file_path)
+                                    <a href="{{ route('evidences.download', $evidence) }}" class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">Descargar</a>
+                                @endif
+                                @can('delete', $evidence)
+                                    <button type="button" wire:click="deleteEvidence({{ $evidence->id }})" wire:confirm="¿Eliminar la evidencia «{{ $evidence->name }}»?"
+                                            class="text-xs font-medium text-rose-600 hover:underline dark:text-rose-400">Eliminar</button>
+                                @endcan
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Sin evidencias en esta actividad.</p>
+                        @endforelse
+                    </div>
+
+                    @can('create', [App\Domains\Evidence\Models\Evidence::class, $project])
+                        {{-- Subir archivo --}}
+                        <form x-show="panel === 'file'" x-cloak wire:submit="saveEvidenceFiles" class="mt-3 space-y-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                            <div>
+                                <input type="file" wire:model="evidenceFiles" multiple
+                                       class="block text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-700 dark:file:text-slate-200">
+                                @error('evidenceFiles') <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
+                                @error('evidenceFiles.*') <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
+                                <div wire:loading wire:target="evidenceFiles" class="mt-1 text-xs text-slate-500">Subiendo…</div>
+                            </div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <x-ui.input label="Versión" wire:model="evidenceVersion" name="evidenceVersion" />
+                            </div>
+                            <x-ui.textarea label="Descripción" wire:model="evidenceDescription" name="evidenceDescription" rows="2" />
+                            <div class="flex justify-end gap-2">
+                                <x-ui.button variant="secondary" size="sm" type="button" @click="panel = 'none'">Cancelar</x-ui.button>
+                                <x-ui.button size="sm" type="submit" wire:loading.attr="disabled">Subir evidencias</x-ui.button>
+                            </div>
+                        </form>
+
+                        {{-- Registrar enlace --}}
+                        <form x-show="panel === 'link'" x-cloak wire:submit="saveEvidenceLink" class="mt-3 space-y-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                            <x-ui.input label="Nombre" wire:model="evidenceLinkName" name="evidenceLinkName" required />
+                            <x-ui.input label="URL" type="url" wire:model="evidenceLinkUrl" name="evidenceLinkUrl" placeholder="https://" required />
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <x-ui.select label="Tipo" wire:model="evidenceLinkType" name="evidenceLinkType">
+                                    <option value="link">Enlace</option>
+                                    <option value="figma">Figma</option>
+                                    <option value="production">Producción</option>
+                                </x-ui.select>
+                                <x-ui.input label="Versión" wire:model="evidenceLinkVersion" name="evidenceLinkVersion" />
+                            </div>
+                            <x-ui.textarea label="Descripción" wire:model="evidenceLinkDescription" name="evidenceLinkDescription" rows="2" />
+                            <div class="flex justify-end gap-2">
+                                <x-ui.button variant="secondary" size="sm" type="button" @click="panel = 'none'">Cancelar</x-ui.button>
+                                <x-ui.button size="sm" type="submit" wire:loading.attr="disabled">Registrar</x-ui.button>
+                            </div>
+                        </form>
+                    @endcan
+                </div>
+
+                {{-- Observaciones de la actividad --}}
                 <div class="border-t border-slate-200 pt-4 dark:border-slate-800">
                     <livewire:comments.comment-thread :commentable="$detailActivity" :compact="true" :key="'activity-comments-'.$detailActivity->id" />
                 </div>

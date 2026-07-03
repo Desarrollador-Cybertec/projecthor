@@ -8,7 +8,8 @@ use App\Domains\Evidence\Models\Evidence;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Timeline\Enums\TimelineEventType;
 use App\Domains\Users\Models\User;
-use App\Livewire\Evidence\EvidenceManager;
+use App\Livewire\Activities\ActivityList;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -17,18 +18,18 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-it('sube archivos como evidencia con miniatura para imágenes', function () {
+it('sube archivos como evidencia con miniatura para imágenes desde el detalle de la actividad', function () {
     $developer = User::factory()->create();
     $project = Project::factory()->create();
     $project->members()->attach($developer);
     $activity = Activity::factory()->create(['project_id' => $project->id]);
 
     Livewire::actingAs($developer)
-        ->test(EvidenceManager::class, ['project' => $project])
-        ->set('upload_activity_id', $activity->id)
-        ->set('upload_version', '1.0')
-        ->set('files', [UploadedFile::fake()->image('pantalla.png', 1200, 800)])
-        ->call('saveFiles')
+        ->test(ActivityList::class, ['project' => $project])
+        ->call('openDetail', $activity->id)
+        ->set('evidenceVersion', '1.0')
+        ->set('evidenceFiles', [UploadedFile::fake()->image('pantalla.png', 1200, 800)])
+        ->call('saveEvidenceFiles')
         ->assertHasNoErrors();
 
     $evidence = $activity->evidences()->first();
@@ -41,47 +42,49 @@ it('sube archivos como evidencia con miniatura para imágenes', function () {
     Storage::disk('public')->assertExists($evidence->thumbnail_path);
 });
 
-it('registra enlaces como evidencia', function () {
+it('registra enlaces como evidencia desde el detalle de la actividad', function () {
     $developer = User::factory()->create();
     $project = Project::factory()->create();
     $project->members()->attach($developer);
     $activity = Activity::factory()->create(['project_id' => $project->id]);
 
     Livewire::actingAs($developer)
-        ->test(EvidenceManager::class, ['project' => $project])
-        ->set('link_activity_id', $activity->id)
-        ->set('link_name', 'Diseño en Figma')
-        ->set('link_url', 'https://figma.com/file/abc')
-        ->set('link_type', 'figma')
-        ->call('saveLink')
+        ->test(ActivityList::class, ['project' => $project])
+        ->call('openDetail', $activity->id)
+        ->set('evidenceLinkName', 'Diseño en Figma')
+        ->set('evidenceLinkUrl', 'https://figma.com/file/abc')
+        ->set('evidenceLinkType', 'figma')
+        ->call('saveEvidenceLink')
         ->assertHasNoErrors();
 
     expect($activity->evidences()->where('type', EvidenceType::Figma->value)->exists())->toBeTrue()
         ->and($project->timelineEvents()->where('type', TimelineEventType::EvidenceUploaded->value)->exists())->toBeTrue();
 });
 
-it('valida que la actividad pertenezca al proyecto', function () {
+it('impide gestionar evidencias de una actividad de otro proyecto', function () {
     $developer = User::factory()->create();
     $project = Project::factory()->create();
     $project->members()->attach($developer);
     $foreignActivity = Activity::factory()->create();
 
+    $this->expectException(ModelNotFoundException::class);
+
     Livewire::actingAs($developer)
-        ->test(EvidenceManager::class, ['project' => $project])
-        ->set('link_activity_id', $foreignActivity->id)
-        ->set('link_name', 'Enlace')
-        ->set('link_url', 'https://example.com')
-        ->call('saveLink')
-        ->assertHasErrors('link_activity_id');
+        ->test(ActivityList::class, ['project' => $project])
+        ->call('openDetail', $foreignActivity->id);
 });
 
-it('impide subir evidencias a quien no es miembro', function () {
+it('impide gestionar evidencias a quien no es miembro', function () {
     $outsider = User::factory()->create();
     $project = Project::factory()->create();
+    $activity = Activity::factory()->create(['project_id' => $project->id]);
 
     Livewire::actingAs($outsider)
-        ->test(EvidenceManager::class, ['project' => $project])
-        ->call('openUpload')
+        ->test(ActivityList::class, ['project' => $project])
+        ->call('openDetail', $activity->id)
+        ->set('evidenceLinkName', 'Enlace')
+        ->set('evidenceLinkUrl', 'https://example.com')
+        ->call('saveEvidenceLink')
         ->assertForbidden();
 });
 

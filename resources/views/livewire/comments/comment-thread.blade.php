@@ -19,12 +19,22 @@
                 </div>
             @endif
             <x-ui.textarea wire:model="content" name="content" rows="3" placeholder="Escribe una observación…" />
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <input type="file" wire:model="attachments" multiple
-                           class="block text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-700 dark:file:text-slate-200">
-                    @error('attachments.*') <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
-                    <div wire:loading wire:target="attachments" class="mt-1 text-xs text-slate-500">Subiendo adjuntos…</div>
+            <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
+                <div class="space-y-2">
+                    <div>
+                        <label class="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Adjuntos</label>
+                        <input type="file" wire:model="attachments" multiple
+                               class="block text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-700 dark:file:text-slate-200">
+                        @error('attachments.*') <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
+                        <div wire:loading wire:target="attachments" class="mt-1 text-xs text-slate-500">Subiendo adjuntos…</div>
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Capturas</label>
+                        <input type="file" wire:model="captures" accept="image/*" multiple
+                               class="block text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-700 dark:file:text-slate-200">
+                        @error('captures.*') <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
+                        <div wire:loading wire:target="captures" class="mt-1 text-xs text-slate-500">Subiendo capturas…</div>
+                    </div>
                 </div>
                 <x-ui.button type="submit" size="sm" wire:loading.attr="disabled">Publicar</x-ui.button>
             </div>
@@ -56,6 +66,8 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        @include('livewire.comments.partials.captures', ['comment' => $comment, 'thumb' => 'size-16'])
 
                         <div class="mt-2 flex flex-wrap items-center gap-3 text-xs">
                             @can('create', [App\Domains\Comments\Models\Comment::class, $commentable])
@@ -101,6 +113,7 @@
                                                     @endforeach
                                                 </div>
                                             @endif
+                                            @include('livewire.comments.partials.captures', ['comment' => $reply, 'thumb' => 'size-12'])
                                         </div>
                                     </div>
                                 @endforeach

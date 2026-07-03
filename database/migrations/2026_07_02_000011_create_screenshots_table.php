@@ -11,10 +11,9 @@ return new class extends Migration
         Schema::create('screenshots', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('stage_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('activity_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('comment_id')->constrained()->cascadeOnDelete();
             $table->foreignId('author_id')->constrained('users')->restrictOnDelete();
-            $table->string('view_name');
+            $table->string('view_name')->nullable();
             $table->string('module')->nullable();
             $table->string('resolution')->nullable();
             $table->string('platform')->nullable();

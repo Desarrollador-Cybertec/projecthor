@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domains\Comments\Models\Comment;
 use App\Domains\Projects\Models\Project;
 use App\Domains\Screenshots\Models\Screenshot;
 use App\Domains\Users\Models\User;
@@ -21,17 +22,11 @@ class ScreenshotFactory extends Factory
     {
         return [
             'project_id' => Project::factory(),
-            'stage_id' => null,
-            'activity_id' => null,
+            'comment_id' => Comment::factory(),
             'author_id' => User::factory(),
-            'view_name' => fake()->randomElement(['Login', 'Dashboard', 'Listado', 'Detalle', 'Formulario', 'Reporte']),
-            'module' => fake()->randomElement(['Autenticación', 'Usuarios', 'Reportes', 'Configuración', 'Facturación']),
-            'resolution' => fake()->randomElement(['1920x1080', '1366x768', '390x844', '768x1024']),
-            'platform' => fake()->randomElement(['Web', 'Móvil', 'Tablet']),
+            'view_name' => null,
             'image_path' => 'screenshots/'.fake()->uuid().'.png',
-            'description' => fake()->sentence(),
-            'notes' => fake()->optional()->sentence(),
-            'version' => fake()->randomElement(['1.0', '1.1', '2.0']),
+            'description' => fake()->optional()->sentence(),
             'taken_at' => fake()->dateTimeBetween('-2 months', 'now')->format('Y-m-d'),
         ];
     }

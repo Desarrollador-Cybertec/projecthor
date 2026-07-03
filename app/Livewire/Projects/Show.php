@@ -23,8 +23,6 @@ class Show extends Component
         'resumen',
         'etapas',
         'actividades',
-        'evidencias',
-        'capturas',
         'archivos',
         'observaciones',
         'timeline',

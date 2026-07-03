@@ -9,7 +9,6 @@ use App\Domains\Comments\Models\Comment;
 use App\Domains\Evidence\Models\Evidence;
 use App\Domains\Projects\Enums\Priority;
 use App\Domains\Projects\Models\Project;
-use App\Domains\Screenshots\Models\Screenshot;
 use App\Domains\Stages\Models\Stage;
 use App\Domains\Users\Models\User;
 use App\Support\Auditing\Auditable;
@@ -80,12 +79,6 @@ class Activity extends Model
     public function evidences(): HasMany
     {
         return $this->hasMany(Evidence::class);
-    }
-
-    /** @return HasMany<Screenshot, $this> */
-    public function screenshots(): HasMany
-    {
-        return $this->hasMany(Screenshot::class);
     }
 
     /** @return MorphMany<Comment, $this> */

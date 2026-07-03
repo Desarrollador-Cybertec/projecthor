@@ -140,17 +140,17 @@ class DatabaseSeeder extends Seeder
                 'author_id' => $admin->id,
             ]);
 
-            Comment::factory()->on($activity)->create([
+            $observation = Comment::factory()->on($activity)->create([
                 'author_id' => $activity->responsible_id ?? $admin->id,
                 'status' => CommentStatus::Open,
             ]);
-        });
 
-        Screenshot::factory()->count(3)->create([
-            'project_id' => $project->id,
-            'activity_id' => $activities->first()?->id,
-            'author_id' => $admin->id,
-        ]);
+            Screenshot::factory()->count(2)->create([
+                'project_id' => $activity->project_id,
+                'comment_id' => $observation->id,
+                'author_id' => $admin->id,
+            ]);
+        });
 
         Document::factory()->count(2)->withVersion()->create([
             'project_id' => $project->id,

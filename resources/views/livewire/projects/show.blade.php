@@ -85,8 +85,6 @@
                 'resumen' => 'Resumen',
                 'etapas' => 'Etapas',
                 'actividades' => 'Actividades',
-                'evidencias' => 'Evidencias',
-                'capturas' => 'Capturas',
                 'archivos' => 'Archivos',
                 'observaciones' => 'Observaciones',
                 'timeline' => 'Línea de tiempo',
@@ -158,10 +156,6 @@
             <livewire:stages.stage-list :project="$project" :key="'stages-'.$project->id" />
         @elseif ($tab === 'actividades')
             <livewire:activities.activity-list :project="$project" :key="'activities-'.$project->id" />
-        @elseif ($tab === 'evidencias')
-            <livewire:evidence.evidence-manager :project="$project" :key="'evidence-'.$project->id" />
-        @elseif ($tab === 'capturas')
-            <livewire:screenshots.screenshot-gallery :project="$project" :key="'screenshots-'.$project->id" />
         @elseif ($tab === 'archivos')
             <livewire:files.document-library :project="$project" :key="'documents-'.$project->id" />
         @elseif ($tab === 'observaciones')
